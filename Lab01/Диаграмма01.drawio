@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="mdx42KhBUMbG0mlnB2a2">
-    <mxGraphModel dx="1058" dy="522" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1269" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -15,7 +15,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="w-6TDFlYYY0oarmO9r5k-7" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="Читатель" vertex="1">
+        <mxCell id="w-6TDFlYYY0oarmO9r5k-7" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="Полный читатель" vertex="1">
           <mxGeometry height="210" width="140" x="40" y="120" as="geometry">
             <mxRectangle height="30" width="90" x="460" y="280" as="alternateBounds" />
           </mxGeometry>
@@ -102,6 +102,29 @@
             </Array>
             <mxPoint x="180" y="190" as="sourcePoint" />
             <mxPoint x="290" y="272" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-1" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="Краткий читатель" vertex="1">
+          <mxGeometry height="150" width="140" x="40" y="360" as="geometry">
+            <mxRectangle height="30" width="90" x="460" y="280" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-2" parent="6tdSqEbBMH6LwbHcYHXp-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="ID читателя" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-3" parent="6tdSqEbBMH6LwbHcYHXp-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Фамилия" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-4" parent="6tdSqEbBMH6LwbHcYHXp-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Имя" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-5" parent="6tdSqEbBMH6LwbHcYHXp-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Отчество" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="6tdSqEbBMH6LwbHcYHXp-8" edge="1" parent="1" source="w-6TDFlYYY0oarmO9r5k-7" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="6tdSqEbBMH6LwbHcYHXp-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="260" y="390" as="sourcePoint" />
+            <mxPoint x="310" y="340" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
