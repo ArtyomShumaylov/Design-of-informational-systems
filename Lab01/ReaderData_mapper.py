@@ -1,156 +1,338 @@
+import csv
 import json
 import re
+from io import StringIO
 
+#Добавить функционал для создания из csv
+#Обновить оба класса с одним функционалом
+#Сделать вторую лабу
 
 class ReaderBrief:
     def __init__(self, last_name: str, first_name: str, sur_name: str):
-        self._validate_name(last_name, "Фамилия")
-        self._validate_name(first_name, "Имя")
-        self._validate_name(sur_name, "Отчество")
-
-        self.__last_name = last_name
-        self.__first_name = first_name
-        self.__sur_name = sur_name
-
-    @property
-    def last_name(self): return self.__last_name
-    @last_name.setter
-    def last_name(self, value):
-        self._validate_name(value, "Фамилия")
-        self.__last_name = value
-
-    @property
-    def first_name(self): return self.__first_name
-    @property
-    def sur_name(self): return self.__sur_name
-
-    def short_view(self) -> str:
-        initials = f"{self.__first_name[0]}.{self.__sur_name[0]}." if self.__sur_name else f"{self.__first_name[0]}."
-        return f"{self.__last_name} {initials}"
-
-    def __str__(self):
-        return self.short_view()
+        self._last_name = self.validate_name(last_name, "Фамилия")
+        self._first_name = self.validate_name(first_name, "Имя")
+        self._sur_name = self.validate_name(sur_name, "Отчество")
 
     @staticmethod
-    def _validate_name(value: str, field_name: str):
+    def validate_name(value: str, field_name: str) -> str:
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"{field_name} должна быть непустой строкой.")
-        if not re.match(r"^[А-Яа-яЁёA-Za-z\s-]+$", value):
+
+        value = value.strip()
+
+        if not re.fullmatch(r"[А-Яа-яЁёA-Za-z\s-]+", value):
             raise ValueError(f"{field_name} содержит недопустимые символы.")
+
+        return value
+
+    @property
+    def last_name(self) -> str:
+        return self._last_name
+
+    @last_name.setter
+    def last_name(self, value: str):
+        self._last_name = self.validate_name(value, "Фамилия")
+
+    @property
+    def first_name(self) -> str:
+        return self._first_name
+
+    @first_name.setter
+    def first_name(self, value: str):
+        self._first_name = self.validate_name(value, "Имя")
+
+    @property
+    def sur_name(self) -> str:
+        return self._sur_name
+
+    @sur_name.setter
+    def sur_name(self, value: str):
+        self._sur_name = self.validate_name(value, "Отчество")
+
+    def short_view(self) -> str:
+        return f"{self.last_name} {self.first_name[0]}.{self.sur_name[0]}."
+
+    def __str__(self) -> str:
+        return self.short_view()
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, ReaderBrief):
+            return NotImplemented
+
+        return (
+            self.last_name,
+            self.first_name,
+            self.sur_name
+        ) == (
+            other.last_name,
+            other.first_name,
+            other.sur_name
+        )
 
 
 class ReaderFull:
-    def __init__(self, client_id: int, last_name: str, first_name: str,
-                 sur_name: str, adress: str, phone_number: str):
-        self._validate_id(client_id)
-        ReaderBrief._validate_name(last_name, "Фамилия")
-        ReaderBrief._validate_name(first_name, "Имя")
-        ReaderBrief._validate_name(sur_name, "Отчество")
-        self._validate_address(adress)
-        self._validate_phone(phone_number)
+    def __init__(self, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], str) and not kwargs:
+            self._init_from_json(args[0])
+        elif len(args) == 6 and not kwargs:
+            self._init_standard(*args)
+        elif 'client_id' in kwargs and len(kwargs) == 6:
+            self._init_standard(
+                kwargs['client_id'],
+                kwargs['last_name'],
+                kwargs['first_name'],
+                kwargs['sur_name'],
+                kwargs['address'],
+                kwargs['phone_number']
+            )
+        else:
+            raise TypeError("Неверные аргументы для конструктора ReaderFull.")
 
-        self.__client_id = client_id
-        self.__last_name = last_name
-        self.__first_name = first_name
-        self.__sur_name = sur_name
-        self.__adress = adress
-        self.__phone_number = phone_number
+    def _init_standard(
+        self,
+        client_id: int,
+        last_name: str,
+        first_name: str,
+        sur_name: str,
+        address: str,
+        phone_number: str
+    ):
+        self._client_id = self.validate_id(client_id)
+        self._last_name = self.validate_name(last_name, "Фамилия")
+        self._first_name = self.validate_name(first_name, "Имя")
+        self._sur_name = self.validate_name(sur_name, "Отчество")
+        self._address = self.validate_address(address)
+        self._phone_number = self.validate_phone(phone_number)
 
-    @property
-    def client_id(self): return self.__client_id
-    @property
-    def last_name(self): return self.__last_name
-    @property
-    def first_name(self): return self.__first_name
-    @property
-    def sur_name(self): return self.__sur_name
-    @property
-    def adress(self): return self.__adress
-    @adress.setter
-    def adress(self, value):
-        self._validate_address(value)
-        self.__adress = value
+    def _init_from_json(self, json_str: str):
+        if not isinstance(json_str, str):
+            raise ValueError("Данные должны быть строкой.")
 
-    @property
-    def phone_number(self): return self.__phone_number
-    @phone_number.setter
-    def phone_number(self, value):
-        self._validate_phone(value)
-        self.__phone_number = value
+        try:
+            data = json.loads(json_str)
+        except (json.JSONDecodeError, TypeError) as error:
+            raise ValueError("Некорректная JSON-строка.") from error
 
-    @staticmethod
-    def _validate_id(value):
-        if not isinstance(value, int) or value <= 0:
-            raise ValueError("ID клиента должен быть целым положительным числом.")
+        if not isinstance(data, dict):
+            raise ValueError("JSON должен содержать объект с данными читателя.")
 
-    @staticmethod
-    def _validate_address(value: str):
-        if not isinstance(value, str) or len(value.strip()) < 5:
-            raise ValueError("Адрес должен быть строкой длиной не менее 5 символов.")
+        required_fields = {
+            "client_id",
+            "last_name",
+            "first_name",
+            "sur_name",
+            "address",
+            "phone_number"
+        }
 
-    @staticmethod
-    def _validate_phone(value: str):
-        if not re.match(r"^\+?[0-9\s\-()]{10,15}$", value):
-            raise ValueError("Неверный формат номера телефона.")
+        missing_fields = required_fields - data.keys()
 
-    @classmethod
-    def from_json(cls, json_str: str) -> 'ReaderFull':
-        data = json.loads(json_str)
-        return cls(
+        if missing_fields:
+            raise ValueError(
+                f"Отсутствуют поля: {', '.join(sorted(missing_fields))}."
+            )
+
+        self._init_standard(
             client_id=data["client_id"],
             last_name=data["last_name"],
             first_name=data["first_name"],
             sur_name=data["sur_name"],
-            adress=data["adress"],
+            address=data["address"],
             phone_number=data["phone_number"]
         )
 
-    @classmethod
-    def from_csv_string(cls, csv_str: str) -> 'ReaderFull':
-        parts = csv_str.split(',')
-        if len(parts) != 6:
-            raise ValueError("Неверный формат CSV строки")
-        return cls(
-            client_id=int(parts[0]),
-            last_name=parts[1],
-            first_name=parts[2],
-            sur_name=parts[3],
-            adress=parts[4],
-            phone_number=parts[5]
+    def _init_from_csv(self, csv_str: str):
+        if not isinstance(csv_str, str):
+            raise ValueError("CSV-данные должны быть строкой.")
+
+        try:
+            rows = list(csv.reader(StringIO(csv_str), strict=True))
+        except csv.Error as error:
+            raise ValueError("Некорректная CSV-строка.") from error
+
+        if len(rows) != 1 or len(rows[0]) != 6:
+            raise ValueError("CSV должен содержать ровно 6 полей в одной строке.")
+
+        client_id, last_name, first_name, sur_name, address, phone_number = rows[0]
+
+        try:
+            client_id = int(client_id)
+        except ValueError as error:
+            raise ValueError("ID читателя в CSV должен быть целым числом.") from error
+
+        self._init_standard(
+            client_id=client_id,
+            last_name=last_name,
+            first_name=first_name,
+            sur_name=sur_name,
+            address=address,
+            phone_number=phone_number
         )
+    
+    @staticmethod
+    def validate_id(value: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise ValueError("ID читателя должен быть положительным целым числом")
+        return value
+
+    @staticmethod
+    def validate_name(value: str, field_name: str) -> str:
+        return ReaderBrief.validate_name(value, field_name)
+
+    @staticmethod
+    def validate_address(value: str) -> str:
+        if not isinstance(value, str) or len(value.strip()) < 5:
+            raise ValueError("Адрес - не менее 5 символов")
+        return value.strip()
+
+    @staticmethod
+    def validate_phone(value: str) -> str:
+        if not isinstance(value, str):
+            raise ValueError("Телефон должен быть str")
+
+        value = value.strip()
+
+        if not re.fullmatch(r"\+?[0-9\s()\-]+", value):
+            raise ValueError("Телефон содержит недопустимые символы")
+
+        digit_count = len(re.sub(r"\D", "", value))
+
+        if not 10 <= digit_count <= 15:
+            raise ValueError("Количество цифр в телефоне должно быть от 10 до 15")
+
+        return value
+
+    @property
+    def client_id(self) -> int:
+        return self._client_id
+
+    @property
+    def last_name(self) -> str:
+        return self._last_name
+
+    @last_name.setter
+    def last_name(self, value: str):
+        self._last_name = self.validate_name(value, "Фамилия")
+
+    @property
+    def first_name(self) -> str:
+        return self._first_name
+
+    @first_name.setter
+    def first_name(self, value: str):
+        self._first_name = self.validate_name(value, "Имя")
+
+    @property
+    def sur_name(self) -> str:
+        return self._sur_name
+
+    @sur_name.setter
+    def sur_name(self, value: str):
+        self._sur_name = self.validate_name(value, "Отчество")
+
+    @property
+    def address(self) -> str:
+        return self._address
+
+    @address.setter
+    def address(self, value: str):
+        self._address = self.validate_address(value)
+
+    @property
+    def phone_number(self) -> str:
+        return self._phone_number
+
+    @phone_number.setter
+    def phone_number(self, value: str):
+        self._phone_number = self.validate_phone(value)
+
+    def short_view(self) -> str:
+        return ReaderMapper.to_brief(self).short_view()
 
     def full_view(self) -> str:
-        return (f"ID: {self.__client_id}, ФИО: {self.__last_name} {self.__first_name} {self.__sur_name}, "
-                f"Адрес: {self.__adress}, Тел: {self.__phone_number}")
+        return (
+            f"ID: {self.client_id}, "
+            f"ФИО: {self.last_name} {self.first_name} {self.sur_name}, "
+            f"Адрес: {self.address}, "
+            f"Телефон: {self.phone_number}"
+        )
 
-    def __repr__(self):
+    def __str__(self) -> str:
         return self.full_view()
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, ReaderFull):
-            return False
-        return self.__client_id == other.__client_id
+            return NotImplemented
+        return self.client_id == other.client_id
 
 
 class ReaderMapper:
     @staticmethod
-    def to_brief(reader_full: ReaderFull) -> ReaderBrief:
+    def to_brief(reader: ReaderFull) -> ReaderBrief:
+        if not isinstance(reader, ReaderFull):
+            raise TypeError("Ожидается ReaderFull")
+
         return ReaderBrief(
-            last_name=reader_full.last_name,
-            first_name=reader_full.first_name,
-            sur_name=reader_full.sur_name
+            last_name=reader.last_name,
+            first_name=reader.first_name,
+            sur_name=reader.sur_name
         )
 
     @staticmethod
-    def to_full(reader_brief: ReaderBrief, client_id: int, adress: str, phone_number: str) -> ReaderFull:
+    def to_full(
+        reader: ReaderBrief,
+        client_id: int,
+        address: str,
+        phone_number: str
+    ) -> ReaderFull:
+        if not isinstance(reader, ReaderBrief):
+            raise TypeError("Ожидается ReaderBrief")
+
         return ReaderFull(
             client_id=client_id,
-            last_name=reader_brief.last_name,
-            first_name=reader_brief.first_name,
-            sur_name=reader_brief.sur_name,
-            adress=adress,
+            last_name=reader.last_name,
+            first_name=reader.first_name,
+            sur_name=reader.sur_name,
+            address=address,
             phone_number=phone_number
         )
 
+if __name__ == "__main__":
+    reader = ReaderFull(
+        1,
+        "Иванов",
+        "Иван",
+        "Иванович",
+        "Москва, улица Ленина, 10",
+        "+79991234567"
+    )
 
-print(ReaderFull(1, "last", "first", "sur", "kolotushkina", "1234567890").full_view())
+    brief_reader = ReaderMapper.to_brief(reader)
+
+    print("Полная версия:", reader.full_view())
+    print("Краткая версия:", brief_reader.short_view())
+
+    json_data = json.dumps({
+        "client_id": 2,
+        "last_name": "Петрова",
+        "first_name": "Анна",
+        "sur_name": "Сергеевна",
+        "address": "Москва, улица Мира, 5",
+        "phone_number": "+79991234568"
+    }, ensure_ascii=False)
+
+    reader_from_json = ReaderFull(json_data)
+    print("Из JSON:", reader_from_json.full_view())
+
+    reader_from_csv = ReaderFull('3,Сидоров,Павел,Игоревич,"Москва, улица Мира, 15",79991234569')
+    print("Из CSV:", reader_from_csv.full_view())
+
+    reconstructed_reader = ReaderMapper.to_full(
+        brief_reader,
+        4,
+        "Казань, улица Мира, 15",
+        "+79991234570"
+    )
+
+    print("Восстановленный:", reconstructed_reader.full_view())
+    print("Одинаковый ID:", reader == reconstructed_reader)
