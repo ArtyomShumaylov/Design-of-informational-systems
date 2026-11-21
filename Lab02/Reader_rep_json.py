@@ -4,7 +4,7 @@ from typing import List, Optional
 from ReaderData_mapper_overloading import ReaderFull, ReaderBrief
 
 
-#Репозиторий для работы с ReaderFull в формате JSON
+# Репозиторий для работы с ReaderFull в формате JSON
 
 class ReaderRepJson:
 
